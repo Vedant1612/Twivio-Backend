@@ -54,7 +54,7 @@ const userSchema = new Schema(
 
 
 // inside the pre method we don't use the call back methodology like: () => {}, because it does not provide the "this" reference to all the values associated with userSchema, which is define above. therefore we uses the function (){}, this type and the "next" parameter used is of the middleware as "pre" is also a middleware method...
-// async because it takes time...
+// async because it takes time...   
 
 userSchema.pre("save", async function (next) {
     if(!this.isModified("password")) return next();
@@ -70,7 +70,7 @@ userSchema.methods.isPasswordCorrect = async function(password){
 
 
 // jwt:
-// It is a bearer token: the one who haves it we can give it an access.. it is like a key, and it also has hogh security ,so no need to wory...
+// It is a bearer token: the one who haves it we can give it an access.. it is like a key, and it also has high security ,so no need to wory...
 
 
 userSchema.methods.generateAccessToken = function(){
