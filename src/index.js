@@ -1,5 +1,6 @@
 // require('dotenv').config({path: './env'})
-// It can easily work , but this required syntax reduces our consistency of project therefor we use following method : for which make change in script in packet.jason file...
+
+// It can easily work , but this "required" syntax reduces our consistency of project therefor we use following method : for which make change in script in packet.jason file...
 
 import dotenv from "dotenv"
 import connectDB from "./db/index.js";
