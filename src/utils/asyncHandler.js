@@ -12,7 +12,7 @@ export { asyncHandler }
 
 // below is just breakdown for easy explanination :
 // const asyncHandler = () => {}
-// const asyncHandler = (func) => () => {}
+// const asyncHandler = (func) => {() => {}}
 // const asyncHandler = (func) => async () => {}
 
 // this is actual code: 
