@@ -22,6 +22,6 @@ import userRouter from './routes/user.routes.js'
 // routes declaration
 app.use("/api/v1/users", userRouter)
 
-// http://localhost:3000/api/v1/users/register    -> this is what the above will do
+// http://localhost:8000/api/v1/users/register    -> this is what the above will do
 
 export { app }
