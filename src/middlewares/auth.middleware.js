@@ -1,7 +1,7 @@
-import { ApiError } from "../utils/ApiErrors";
-import { asyncHandler } from "../utils/asyncHandler";
+import { ApiError } from "../utils/ApiErrors.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken"
-import { User } from "../models/user.model";
+import { User } from "../models/user.model.js";
 
 // for following in : (req,res,next) ,we are not using " res " so put it " _ ", which you will often watch in production level application...
 export const  verifyJWT = asyncHandler(async (req, _, next)=>{
