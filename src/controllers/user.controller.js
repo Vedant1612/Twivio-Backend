@@ -168,7 +168,7 @@ const logoutUser = asyncHandler(async (req,res) => {
         req.user._id,
         {
             $set: {
-                refreshToken: undefined
+                refreshToken: 1 //this removes the field from document..
             },
         },
         {
@@ -203,7 +203,7 @@ const refreshAccessToken = asyncHandler(async (req,res)=>{
 
     try {
         const decodedToken = jwt.verify(
-            refreshAccessToken,
+            incomingRefreshToken,
             process.env.REFRESH_TOKEN_SECRET
         )
     
