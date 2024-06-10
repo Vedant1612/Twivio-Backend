@@ -24,7 +24,7 @@ const addComment = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid Video Id")
     }
 
-    const newComment = Comment.create(
+    const newComment = await Comment.create(
         {
             content,
             video: videoId,
@@ -47,11 +47,80 @@ const addComment = asyncHandler(async (req, res) => {
 
 const updateComment = asyncHandler(async (req, res) => {
     // TODO: update a comment
-    
+    const { content } = req.body
+    const { commentId } = req.params
+
+    if(!content){
+        throw new ApiError(400, "Comment is required")
+    }
+
+    if(!isValidObjectId(commentId)){
+        throw new ApiError(400, "Invalid Comment Id")
+    }
+
+    const oldComment = await Comment.findById(commentId)
+
+    if(!oldComment){
+        throw new ApiError(400, "Comment not found")
+    }
+
+    if(oldComment?.owner.toString() != req.user?._id){
+        throw new ApiError(400, "Only owner can edit comment")
+    }
+
+    const newComment = await Comment.findByIdAndUpdate(
+        commentId,
+        {
+            $set: {content}
+        },
+        {new: true}
+    )
+
+    if(!newComment){
+        throw new ApiResponse(400, "failed to update comment")
+    }
+
+    return req
+    .status(200)
+    .json(
+        new ApiResponse(200, newComment, "Comment updated successfully")
+    )
+
 })
 
 const deleteComment = asyncHandler(async (req, res) => {
     // TODO: delete a comment
+    const { commentId } = req.params
+
+    if(!isValidObjectId(commentId)){
+        throw new ApiError(400, "Invalid Comment Id")
+    }
+
+    const oldComment = await Comment.findById(commentId)
+
+    if(!oldComment){
+        throw new ApiError(400, "Comment not found")
+    }
+
+    if(oldComment.owner?._id !== req.user._id){
+        throw new ApiError(401, "Only Owners can delete comment")
+    }
+
+    const deletedComment = await Comment.findByIdAndDelete(
+        commentId
+    )
+
+    if(!deleteComment){
+        throw new ApiError(400, "failed to delete Comment")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, deleteComment, "Comment deleted Successfully")
+    )
+
+
 })
 
 export {
