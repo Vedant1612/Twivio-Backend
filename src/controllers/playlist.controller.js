@@ -252,13 +252,42 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Something went wrong while removing video to a playlist")
     }
 
-    return res.status(200)
-    .json(new ApiResponse(200, deletedPlaylist, "Video removed from Playlist successfully"))
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, deletedPlaylist, "Video removed from Playlist successfully")
+    )
 })
 
 const deletePlaylist = asyncHandler(async (req, res) => {
     const {playlistId} = req.params
     // TODO: delete playlist
+
+    if(!isValidObjectId(playlistId)){
+        throw new ApiError(400, "Invalid playlist id")
+    }
+
+    const playlist = await Playlist.findById(playlistId)
+
+    if(!playlist){
+        throw new ApiError(400, "Playlist not found")
+    }
+
+    if(playlist?.owner.toString() != req.user?._id){
+        throw new ApiError(400, "only owner can delete playlist")
+    }
+
+    const deletedPlaylist = await Playlist.findByIdAndDelete(playlistId)
+
+    if(!deletedPlaylist){
+        throw new ApiError(400, "Something went wrong while deleting a playlist")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, deletedPlaylist, "Playlist deleted successfully")
+    )
 })
 
 const updatePlaylist = asyncHandler(async (req, res) => {
