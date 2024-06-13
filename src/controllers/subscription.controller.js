@@ -12,13 +12,15 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     const {channelId} = req.params
     // TODO: toggle subscription
 
+    console.log(channelId)
+    
     if(!isValidObjectId(channelId)){
         throw new ApiError(400, "Invalid Channel Id")
     }
 
     const isSubscribed = await Subscription.findOne({
         subscriber: req.user?._id,
-        cahnnel: channelId
+        channel: channelId
     })
 
     if(isSubscribed){
@@ -27,13 +29,13 @@ const toggleSubscription = asyncHandler(async (req, res) => {
         return res
         .status(200)
         .json(
-            new ApiResponse(200, {subscribed: false}, "Channel unsubscribed successfully")
+            new ApiResponse(200, {subscribed: false, isSubscribed}, "Channel unsubscribed successfully")
         )
     }
 
     await Subscription.create({
         subscriber: req.user?._id,
-        cahnnel: channelId
+        channel: channelId
     })
 
     // if(!channelSubscribed){
@@ -52,7 +54,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     const {channelId} = req.params
     console.log(channelId)
     if(!isValidObjectId(channelId)){
-        throw new ApiError(400, "Invalid Channel_Id")
+        throw new ApiError(400, "Invalid Channel Id")
     }
 
     const subscribers = await Subscription.aggregate([
@@ -70,14 +72,14 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
             }
         },
         {
-            $unwind: "subscribers"
+            $unwind: "$subscribers"
         },
         {
             $project: {
                 _id: 1,
                 subscriber: {
                     _id: "$subscribers._id",
-                    username: "subscriber.username",
+                    username: "$subscriber.username",
                     fullname: "$subscribers.fullname",
                     avatar: "$subscribers.avatar"
                 }
