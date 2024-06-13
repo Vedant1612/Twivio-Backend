@@ -123,7 +123,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     return res
     .status(200)
     .json(
-        new ApiResponse(200,commentLiked, "Tweet liked successfully")
+        new ApiResponse(200,tweetLiked, "Tweet liked successfully")
     )
 }
 )
