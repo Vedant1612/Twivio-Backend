@@ -156,7 +156,7 @@ const updateComment = asyncHandler(async (req, res) => {
         throw new ApiResponse(400, "failed to update comment")
     }
 
-    return req
+    return res
     .status(200)
     .json(
         new ApiResponse(200, newComment, "Comment updated successfully")
@@ -178,8 +178,8 @@ const deleteComment = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Comment not found")
     }
 
-    if(oldComment.owner?._id !== req.user._id){
-        throw new ApiError(401, "Only Owners can delete comment")
+    if (oldComment.owner.toString() !== req.user._id.toString()) {
+        throw new ApiError(401, "Only owners can delete comment");
     }
 
     const deletedComment = await Comment.findByIdAndDelete(
