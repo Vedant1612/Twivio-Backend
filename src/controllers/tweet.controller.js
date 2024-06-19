@@ -35,6 +35,7 @@ const createTweet = asyncHandler(async (req, res) => {
 const getUserTweets = asyncHandler(async (req, res) => {
     // TODO: get user tweets
     const { userId } = req.params
+
     if(!isValidObjectId(userId)){
         throw new ApiError(401, "Invalid User Id")
     }
@@ -109,9 +110,9 @@ const getUserTweets = asyncHandler(async (req, res) => {
         },
     ])
 
-    if(!tweets?.length){
-        throw new ApiError(400, "User tweets don't exists")
-    }
+    // if(!tweets?.length){
+    //     throw new ApiError(400, "User tweets don't exists")
+    // }
 
     return res
     .status(200)
@@ -137,7 +138,7 @@ const updateTweet = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Tweet not found")
     }
     
-    if(tweet?.owner.toString() != req.user?._id){
+    if(tweet?.owner.toString() != req.user?._id.toString()){
         throw new ApiError(400, "Only owner can edit tweet")
     }
 
@@ -155,7 +156,7 @@ const updateTweet = asyncHandler(async (req, res) => {
     }
 
     return res.status(200)
-    .json(new ApiResponse(200, "Tweet updated successfully", updatedTweet))
+    .json(new ApiResponse(200, updatedTweet, "Tweet updated successfully"))
 })
 
 const deleteTweet = asyncHandler(async (req, res) => {
