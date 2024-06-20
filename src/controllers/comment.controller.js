@@ -6,8 +6,13 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import {Video} from "../models/video.model.js"
 
 const getVideoComments = asyncHandler(async (req, res) => {
-    const { videoId } = req.params;
-    const { page = 1, limit = 10 } = req.query;
+    //TODO: get all comments for a video
+    const {videoId} = req.params
+    const {page = 1, limit = 10} = req.query
+
+    if(!isValidObjectId(videoId)){
+        throw new ApiError(400, "Invalid video Id")
+    }
 
     const video = await Video.findById(videoId);
 
@@ -15,7 +20,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Video not found");
     }
 
-    const commentsAggregate = Comment.aggregate([
+    const comment = Comment.aggregate([
         {
             $match: {
                 video: new mongoose.Types.ObjectId(videoId)
@@ -34,60 +39,53 @@ const getVideoComments = asyncHandler(async (req, res) => {
                 from: "likes",
                 localField: "_id",
                 foreignField: "comment",
-                as: "likes"
+                as: "likedBy"
             }
         },
         {
             $addFields: {
                 likesCount: {
-                    $size: "$likes"
+                    $size: "$likedBy"
                 },
                 owner: {
                     $first: "$owner"
                 },
                 isLiked: {
                     $cond: {
-                        if: { $in: [req.user?._id, "$likes.likedBy"] },
+                        if: { $in: [req.user?._id, "$likedBy.likedBy"]},
                         then: true,
                         else: false
-                    }
+                    } 
                 }
             }
         },
         {
-            $sort: {
-                createdAt: -1
-            }
-        },
-        {
             $project: {
+                _id: 1,
                 content: 1,
                 createdAt: 1,
-                likesCount: 1,
                 owner: {
                     username: 1,
-                    fullName: 1,
-                    "avatar.url": 1
+                    fullname: 1,
+                    avatar: 1
                 },
+                likesCount: 1,
                 isLiked: 1
             }
-        }
-    ]);
+        }        
+    ])
+     
 
     const options = {
         page: parseInt(page, 10),
         limit: parseInt(limit, 10)
-    };
+    }
 
-    const comments = await Comment.aggregatePaginate(
-        commentsAggregate,
-        options
-    );
+    const allComments = await Comment.aggregatePaginate(comment, options)
 
-    return res
-        .status(200)
-        .json(new ApiResponse(200, comments, "Comments fetched successfully"));
-});
+    return res.status(200)
+    .json(new ApiResponse(200, "Video comments fetched successfully", allComments))
+})
 
 const addComment = asyncHandler(async (req, res) => {
     // TODO: add a comment to a video
