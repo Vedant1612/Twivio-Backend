@@ -27,11 +27,11 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
         return res
         .status(200)
         .json(
-            new ApiResponse(200, {}, " Video disliked successfully")
+            new ApiResponse(200, { isLiked: false }, " Video disliked successfully")
         )
     }
 
-    const videoLiked = await Like.create(
+    await Like.create(
         {
             video: videoId,
             likedBy: req.user?._id
@@ -41,7 +41,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     return res
     .status(200)
     .json(
-        new ApiResponse(200, videoLiked, "Video Liked successfully")
+        new ApiResponse(200, { isLiked: true }, "Video Liked successfully")
     )
 })
 
@@ -68,11 +68,11 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
         return res
         .status(200)
         .json(
-            new ApiResponse(200, {}, "Comment disliked successfully")
+            new ApiResponse(200, { isLiked: false }, "Comment disliked successfully")
         )
     }
 
-    const commentLiked = await Like.create(
+    await Like.create(
         {
             comment: commentId,
             likedBy: req.user?._id
@@ -82,7 +82,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     return res
     .status(200)
     .json(
-        new ApiResponse(200,commentLiked, "comment liked successfully")
+        new ApiResponse(200, { isLiked: true }, "comment liked successfully")
     )
 })
 
@@ -109,11 +109,11 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
         return res
         .status(200)
         .json(
-            new ApiResponse(200, {}, "Tweet disliked successfully")
+            new ApiResponse(200, { tweetId, isLiked: false }, "Tweet disliked successfully")
         )
     }
 
-    const tweetLiked = await Like.create(
+    await Like.create(
         {
             tweet: tweetId,
             likedBy: req.user?._id
@@ -123,73 +123,81 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     return res
     .status(200)
     .json(
-        new ApiResponse(200,tweetLiked, "Tweet liked successfully")
+        new ApiResponse(200, { isLiked: true }, "Tweet liked successfully")
     )
 }
 )
 
 const getLikedVideos = asyncHandler(async (req, res) => {
-    //TODO: get all liked videos
-    const likedVideos = await Like.aggregate([
+    const likedVideosAggegate = await Like.aggregate([
         {
             $match: {
-                likedBy: new mongoose.Types.ObjectId(req.user?._id)
-            }
+                likedBy: new mongoose.Types.ObjectId(req.user?._id),
+            },
         },
         {
             $lookup: {
                 from: "videos",
                 localField: "video",
                 foreignField: "_id",
-                as: "videos",
+                as: "likedVideo",
                 pipeline: [
                     {
                         $lookup: {
                             from: "users",
                             localField: "owner",
                             foreignField: "_id",
-                            as: "owner"
-                        }
+                            as: "ownerDetails",
+                        },
                     },
-                ]
-            }
+                    {
+                        $unwind: "$ownerDetails",
+                    },
+                ],
+            },
         },
         {
-            $addFields: {
-                videoCount: {
-                    $size: "$videos"
-                }
-            }
+            $unwind: "$likedVideo",
         },
         {
-            $unwind: "$videos"
+            $sort: {
+                createdAt: -1,
+            },
         },
         {
             $project: {
-                videos: {
+                _id: 0,
+                likedVideo: {
                     _id: 1,
-                    videoFile: 1,
-                    thumbnail: 1,
+                    "videoFile.url": 1,
+                    "thumbnail.url": 1,
+                    owner: 1,
                     title: 1,
                     description: 1,
-                    duration: 1,
-                    updatedAt: 1,
                     views: 1,
-                    owner: {
+                    duration: 1,
+                    createdAt: 1,
+                    isPublished: 1,
+                    ownerDetails: {
                         username: 1,
-                        avatar: 1
-                    }
+                        fullName: 1,
+                        "avatar.url": 1,
+                    },
                 },
-                videoCount: 1,
-                updatedAt: 1,
-            }
-        }
-    ])
+            },
+        },
+    ]);
 
-
-    return res.status(200)
-    .json(new ApiResponse(200, "Liked videos fetched successfully", likedVideos))
-})
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                likedVideosAggegate,
+                "liked videos fetched successfully"
+            )
+        );
+});
 
 export {
     toggleCommentLike,

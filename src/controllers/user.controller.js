@@ -111,7 +111,7 @@ const loginUser = asyncHandler(async (req,res)=>{
     // send cookie
 
     const {email, username, password} = req.body
-    console.log(email);
+    // console.log(email);
 
     if (!username && !email) {
         throw new ApiError(400, "username or email is required")
@@ -263,11 +263,13 @@ const changeCurrentPassword = asyncHandler(async(req,res)=>{
     .json(new ApiResponse(200,{},"Password changed Successfully"))
 })
 
-const getCurrentUser = asyncHandler(async(req,res)=>{
+const getCurrentUser = asyncHandler(async(req, res) => {
     return res
-    .status(200)
-    .json(200, req.user,"current user fetch successfully")
-})
+        .status(200)
+        .json(
+            new ApiResponse(200, req.user, "current user fetched successfully")
+        )
+});
 
 const updateAccountDetails = asyncHandler(async(req,res)=>{
     const {fullName, email} = req.body
@@ -360,29 +362,29 @@ const updateUserCoverImage = asyncHandler(async(req,res)=>{
     )
 })
 
-const getUserChannelProfile = asyncHandler(async(req,res)=>{
-    const {username} = req.params
+const getUserChannelProfile = asyncHandler(async(req, res) => {
+    const {username} = req.params;
 
-    if(!username?.trim()){
-        throw new ApiError(400, "username is missing")
+    if (!username?.trim()) {
+        throw new ApiError(400, "username is missing");
     }
 
     const channel = await User.aggregate([
         {
-            $match:{
+            $match: {
                 username: username?.toLowerCase()
             }
         },
         {
-            $lookup:{
-                from: "subscriptions",
-                localField: "_id",
-                foreignField: "channel",
-                as: "subscribers"
+            $lookup: {
+                from: "subscriptions", // The collection to join with
+                localField: "_id", // Field from the current collection (User) to match
+                foreignField: "channel", // Field from the 'subscriptions' collection to match
+                as: "subscribers" // Alias for the joined data
             }
         },
         {
-            $lookup:{
+            $lookup: {
                 from: "subscriptions",
                 localField: "_id",
                 foreignField: "subscriber",
@@ -391,7 +393,7 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
         },
         {
             $addFields: {
-                subscribersCount: {
+                subcribersCount: {
                     $size: "$subscribers"
                 },
                 channelsSubscribedToCount: {
@@ -410,26 +412,31 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
             $project: {
                 fullName: 1,
                 username: 1,
-                subscribersCount: 1,
-                channelsSubscribedToCount: 1,
-                isSubscribed: 1,
+                email: 1,
                 avatar: 1,
                 coverImage: 1,
-                eamil: 1
+                subcribersCount: 1,
+                channelsSubscribedToCount: 1,
+                isSubscribed: 1
             }
         }
-    ])
+    ]);
 
-    if(!channel?.length){
-        throw new ApiError(404, "channel does not exists")
+    // console.log(channel);
+    if (!channel?.length) {
+        throw new ApiError(404, "channel does not exist");
     }
 
     return res
-    .status(200)
-    .json(
-        new ApiResponse(200, channel[0],"user channel fetched successfully")
-    )
-})
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                channel[0],
+                "User channel fetced successfully"
+            )
+        )
+});
 
 const getWatchHistory = asyncHandler(async(req,res)=>{
     const user = await User.aggregate([

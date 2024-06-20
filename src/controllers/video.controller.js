@@ -8,10 +8,9 @@ import {deleteFromCloudinary, uploadOnCloudinary} from "../utils/cloudinary.js"
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
-    //TODO: get all videos based on query, sort, pagination
-
-    let pipeline = []
+    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+    // console.log(userId);
+    const pipeline = [];
 
     // for using Full Text based search u need to create a search index in mongoDB atlas
     // you can include field mapppings in search index eg.title, description, as well
@@ -32,7 +31,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
     if (userId) {
         if (!isValidObjectId(userId)) {
-            throw new ApiError(400, "Invalid User Id")
+            throw new ApiError(400, "Invalid userId");
         }
 
         pipeline.push({
@@ -43,7 +42,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     }
 
     // fetch videos only that are set isPublished as true
-    pipeline.push({ $match: { isPublished: true } })
+    pipeline.push({ $match: { isPublished: true } });
 
     //sortBy can be views, createdAt, duration
     //sortType can be ascending(-1) or descending(1)
@@ -54,7 +53,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
             }
         });
     } else {
-        pipeline.push({ $sort: { createdAt: -1 } })
+        pipeline.push({ $sort: { createdAt: -1 } });
     }
 
     pipeline.push(
@@ -68,7 +67,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
                     {
                         $project: {
                             username: 1,
-                            "avatar.url": 1
+                            avatar: 1
                         }
                     }
                 ]
@@ -79,21 +78,19 @@ const getAllVideos = asyncHandler(async (req, res) => {
         }
     )
 
-    const videoAggregate = Video.aggregate(pipeline)
+    const videoAggregate = Video.aggregate(pipeline);
 
     const options = {
         page: parseInt(page, 10),
         limit: parseInt(limit, 10)
     };
 
-    const video = await Video.aggregatePaginate(videoAggregate, options)
+    const video = await Video.aggregatePaginate(videoAggregate, options);
 
     return res
-    .status(200)
-    .json(
-        new ApiResponse(200, video, "Videos fetched successfully")
-    )
-})
+        .status(200)
+        .json(new ApiResponse(200, video, "Videos fetched successfully"));
+});
 
 const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description} = req.body
@@ -256,7 +253,7 @@ const getVideoById = asyncHandler(async (req, res) => {
     ]);
 
     if(!video){
-        throw new ApiError(404, "No video found")
+        throw new ApiError(500, "No video found")
     }
 
     await Video.findByIdAndUpdate(
@@ -264,23 +261,30 @@ const getVideoById = asyncHandler(async (req, res) => {
         {
                 $inc: { views: 1 }
         },
-        {new: true}
+        // {new: true}
     )
 
 
-    const user = await User.findById(req.user?._id).select('watchHistory')
+    // const user = await User.findById(req.user?._id).select('watchHistory')
 
-    user.watchHistory.push(videoId)
-    await user.save()
+    // add this video to user watch history
+    await User.findByIdAndUpdate(req.user?._id, {
+        $addToSet: {
+            watchHistory: videoId
+        }
+    });
 
-    const updatedVideo = {
-        video,
-        watchHistory: user.watchHistory
-    }
+    // user.watchHistory.push(videoId)
+    // await user.save()
+
+    // const updatedVideo = {
+    //     video,
+    //     watchHistory: user.watchHistory
+    // }
 
     return res
     .status(200)
-    .json(new ApiResponse(200, updatedVideo, "Video Fetched successfully"))
+    .json(new ApiResponse(200, video[0], "Video Fetched successfully"))
 })
 
 const updateVideo = asyncHandler(async (req, res) => {
