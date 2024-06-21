@@ -14,7 +14,7 @@ Twivio is a cutting-edge social media platform that seamlessly integrates the be
 | -------------------| ----------------------------------------------------------------------------|
 | API Documentation  | [click here](https://documenter.getpostman.com/view/35956208/2sA3XWbHmZ)    |
 | Model              | [click here ](https://app.eraser.io/workspace/YtPqZ1VogxGy1jzIDkzj)         |
-| Live Link          | [click here ](https://youtube-frontend-knx4.onrender.com/)         |
+| Live Link          | [click here ](https://youtube-frontend-knx4.onrender.com/)                  |
 
 ## Features
 
