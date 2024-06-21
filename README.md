@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This is a ``YOUTUBE + TWITTER`` backend project that encompasses most the functionalities of YouTube 
+This is a ``YOUTUBE + TWITTER`` **FULL-STACK** project that encompasses most the functionalities of YouTube 
 while also integrating the tweet functionality from Twitter. Find more about this project in the documentation below.
 
 ## **_Overview_** 
