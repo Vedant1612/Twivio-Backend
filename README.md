@@ -1,9 +1,12 @@
-# Twivio
+# Twivio: The Ultimate Social Media Experience
 
 ## Introduction
 
 This is a ``YOUTUBE + TWITTER`` backend project that encompasses most the functionalities of YouTube 
 while also integrating the tweet functionality from Twitter. Find more about this project in the documentation below.
+
+## **_Overview_** 
+Twivio is a cutting-edge social media platform that seamlessly integrates the best features of Twitter and YouTube. It offers users a unique space to share short, engaging tweets and longer, captivating videos, all in one place. Whether you want to express quick thoughts or create in-depth content, Twivio has got you covered.
 
 ## Important links
 
